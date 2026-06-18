@@ -18,5 +18,17 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: modular-form-creator-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - ./public:/app/public
+    depends_on:
+      - backend
 volumes:
   mongo_data:
