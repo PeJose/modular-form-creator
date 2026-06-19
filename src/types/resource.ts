@@ -22,12 +22,14 @@ export interface ResourcePayload {
 }
 
 export interface Resource {
-  _id?: string
+  _id: string
+  resourceId: number
   name: string
-  status?: ResourceStatus
+  status: ResourceStatus
   basicInfo?: BasicInfo
   projectDetails?: ProjectDetails
-  [key: string]: unknown
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ListResourcesResult {

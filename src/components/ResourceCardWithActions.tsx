@@ -53,7 +53,7 @@ export function ResourceCardWithActions({
   resource,
   onDelete,
 }: ResourceCardWithActionsProps) {
-  const navigateUrl = `/resources/${resource._id}/overview`
+  const navigateUrl = `/resources/${resource._id}`
 
   return (
     <Card variant="outline">
