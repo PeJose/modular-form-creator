@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { resourceService } from '../services/resourceService'
-import { Resource } from '../types/resource'
+import type { Resource } from '../types/resource'
 
 export const useResource = (id: string) => {
   const queryClient = useQueryClient()

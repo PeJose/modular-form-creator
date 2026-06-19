@@ -9,16 +9,22 @@ export const useResources = () => {
     queryFn: resourceService.getResources,
   });
 
-  const createResource = async (name: string) => {
-    const result = await resourceService.createResource(name);
-    queryClient.invalidateQueries({ queryKey: ['resources'] });
-    return result;
-  };
+    const createResource = async (name: string) => {
+      const result = await resourceService.createResource(name);
+      queryClient.invalidateQueries({ queryKey: ['resources'], exact: true });
+      return result;
+    };
 
-  return {
-    resources,
-    isLoading,
-    error,
-    createResource,
-  };
+    const deleteResource = async (id: string) => {
+      await resourceService.deleteResource(id);
+      queryClient.invalidateQueries({ queryKey: ['resources'], exact: true });
+    };
+
+    return {
+      resources,
+      isLoading,
+      error,
+      createResource,
+      deleteResource,
+    };
 };
