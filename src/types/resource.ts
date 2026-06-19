@@ -27,5 +27,15 @@ export interface Resource {
   status?: ResourceStatus
   basicInfo?: BasicInfo
   projectDetails?: ProjectDetails
-  [key: string]: any
+  [key: string]: unknown
+}
+
+export interface ListResourcesResult {
+  items: Resource[]
+  pagination: {
+    page: number
+    pageSize: number
+    totalItems: number
+    totalPages: number
+  }
 }

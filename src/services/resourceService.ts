@@ -1,39 +1,47 @@
-import api from '../api/axios';
-import { Resource } from '../types/resource';
+import api from '../api/axios'
+import type { Resource, ListResourcesResult } from '../types/resource'
 
 export const resourceService = {
-  getResources: async (): Promise<Resource[]> => {
-    const { data } = await api.get('/resources');
-    return data;
+  getResources: async (): Promise<ListResourcesResult> => {
+    const { data } = await api.get('/resources')
+    return data
   },
 
   getResourceById: async (id: string): Promise<Resource> => {
-    const { data } = await api.get(`/resources/${id}`);
-    return data;
+    const { data } = await api.get(`/resources/${id}`)
+    return data
   },
 
   createResource: async (name: string): Promise<Resource> => {
-    const { data } = await api.post('/resources', { name });
-    return data;
+    const { data } = await api.post('/resources', { resourceName: name })
+    return data
   },
 
   updateBasicInfo: async (id: string, data: Partial<Resource>): Promise<Resource> => {
-    const { data: response } = await api.put(`/resources/${id}/basic-info`, data);
-    return response as Resource;
+    const { data: response } = await api.patch(`/resources/${id}/basic-info`, data)
+    return response as Resource
   },
 
-  updateProjectDetails: async (id: string, data: Partial<Resource>): Promise<Resource> => {
-    const { data: response } = await api.put(`/resources/${id}/project-details`, data);
-    return response as Resource;
+  updateProjectDetails: async (
+    id: string,
+    data: Partial<Resource>,
+  ): Promise<Resource> => {
+    const { data: response } = await api.patch(`/resources/${id}/project-details`, data)
+    return response as Resource
   },
 
   provisionResource: async (id: string): Promise<Resource> => {
-    const { data } = await api.post(`/resources/${id}/provision`);
-    return data;
+    const { data } = await api.patch(`/resources/${id}/provisioning`)
+    return data.resource
   },
 
   fullUpdateResource: async (id: string, data: Partial<Resource>): Promise<Resource> => {
-    const { data: response } = await api.put(`/resources/${id}/full-update`, data);
-    return response as Resource;
+    const { data: response } = await api.put(`/resources/${id}`, data)
+    return response as Resource
   },
-};
+
+  deleteResource: async (id: string): Promise<Resource> => {
+    const { data } = await api.delete(`/resources/${id}`)
+    return data
+  },
+}
