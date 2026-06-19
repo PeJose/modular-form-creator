@@ -4,6 +4,7 @@ import { useResources } from '../hooks/useResources'
 import { CreateResourceDrawer } from '../components/CreateResourceDrawer'
 import { ResourceCardWithActions } from '../components/ResourceCardWithActions'
 import { Button } from '../design-system'
+import axios from 'axios'
 
 function ResourcesList() {
   const { resources, isLoading, error, createResource, deleteResource } = useResources()
@@ -17,14 +18,18 @@ function ResourcesList() {
       await createResource(name.trim())
       setIsCreateOpen(false)
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to create resource'
+      let errorMessage = 'Failed to create resource'
+      if (err instanceof axios.AxiosError && err.response?.data?.message) {
+        errorMessage = err.response.data.message
+      } else if (err instanceof Error) {
+        errorMessage = err.message
+      }
       setCreateError(errorMessage)
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this resource?')) {
+    if (id && window.confirm('Are you sure you want to delete this resource?')) {
       await deleteResource(id)
     }
   }
@@ -59,7 +64,7 @@ function ResourcesList() {
         <GridContainer>
           {resources.items.map((resource) => (
             <ResourceCardWithActions
-              key={resource.id}
+              key={resource._id}
               resource={resource}
               onDelete={handleDelete}
             />

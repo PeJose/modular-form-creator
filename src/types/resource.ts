@@ -22,7 +22,7 @@ export interface ResourcePayload {
 }
 
 export interface Resource {
-  id?: string
+  _id?: string
   name: string
   status?: ResourceStatus
   basicInfo?: BasicInfo
