@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { resourceService } from '../services/resourceService'
 import type { Resource } from '../types/resource'
+import type { BasicInfo, ProjectDetails } from '../schemas/resource.schema'
 
 export const useResource = (id: string) => {
   const queryClient = useQueryClient()
@@ -15,14 +16,14 @@ export const useResource = (id: string) => {
     enabled: !!id,
   })
 
-  const updateBasicInfo = async (data: Partial<Resource>) => {
+  const updateBasicInfo = async (data: BasicInfo) => {
     const result = await resourceService.updateBasicInfo(id, data)
     queryClient.invalidateQueries({ queryKey: ['resources', id] })
     queryClient.invalidateQueries({ queryKey: ['resources'] })
     return result
   }
 
-  const updateProjectDetails = async (data: Partial<Resource>) => {
+  const updateProjectDetails = async (data: ProjectDetails) => {
     const result = await resourceService.updateProjectDetails(id, data)
     queryClient.invalidateQueries({ queryKey: ['resources', id] })
     queryClient.invalidateQueries({ queryKey: ['resources'] })

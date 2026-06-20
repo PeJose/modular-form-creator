@@ -1,3 +1,5 @@
+import type { Category, Priority, TeamMember } from '../enums'
+
 export type ResourceStatus = 'draft' | 'completed'
 
 export interface BasicInfo {
@@ -5,14 +7,14 @@ export interface BasicInfo {
   owner: string
   email: string
   description: string
-  priority: string
+  priority: Priority
 }
 
 export interface ProjectDetails {
   projectName: string
   budget: string
-  category: string
-  options: string[]
+  category: Category
+  options: TeamMember[]
 }
 
 export interface ResourcePayload {

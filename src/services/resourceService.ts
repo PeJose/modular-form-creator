@@ -1,4 +1,5 @@
 import api from '../api/axios'
+import type { BasicInfo, ProjectDetails } from '../schemas/resource.schema'
 import type { Resource, ListResourcesResult } from '../types/resource'
 
 export const resourceService = {
@@ -17,15 +18,12 @@ export const resourceService = {
     return data
   },
 
-  updateBasicInfo: async (id: string, data: Partial<Resource>): Promise<Resource> => {
+  updateBasicInfo: async (id: string, data: BasicInfo): Promise<Resource> => {
     const { data: response } = await api.patch(`/resources/${id}/basic-info`, data)
     return response as Resource
   },
 
-  updateProjectDetails: async (
-    id: string,
-    data: Partial<Resource>,
-  ): Promise<Resource> => {
+  updateProjectDetails: async (id: string, data: ProjectDetails): Promise<Resource> => {
     const { data: response } = await api.patch(`/resources/${id}/project-details`, data)
     return response as Resource
   },
