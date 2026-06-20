@@ -6,8 +6,9 @@ import {
   ResourceBasicInfo,
   ResourceProjectDetails,
   ResourceDetails,
-} from './views'
+} from './pages'
 import { Layout } from './components/layout/Layout'
+import { ResourceLayout } from './components/layout/ResourceLayout'
 
 export function AppRoutes() {
   return (
@@ -17,7 +18,7 @@ export function AppRoutes() {
       <Route path="resources" element={<Layout />}>
         <Route index element={<ResourcesList />} />
 
-        <Route path=":resourceId">
+        <Route path=":resourceId" element={<ResourceLayout />}>
           <Route index element={<ResourceOverview />} />
 
           <Route path="basic-info" element={<ResourceBasicInfo />} />
