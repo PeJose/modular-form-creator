@@ -1,9 +1,10 @@
-import { useParams } from 'react-router'
-import { Card, Badge } from '../design-system'
+import { useParams, useNavigate } from 'react-router'
+import { Button, Card, Badge } from '../design-system'
 import styled from 'styled-components'
 import { useResource } from '../hooks/useResource'
 import { useResourceEditBuffer } from '../store/resourceEditBuffer'
 import { PendingBadge } from '../components/PendingBadge'
+import { ResourceStatusBadge } from '../components/ResourceStatusBadge'
 import { isBasicInfoComplete, isProjectDetailsComplete } from '../utils/moduleHelpers'
 import { BackToOverviewButton } from '../components/BackToOverviewButton'
 
@@ -17,6 +18,12 @@ const HeaderSection = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `
 
 const ModuleCard = styled.div`
@@ -59,6 +66,7 @@ const NoData = styled.p`
 
 function ResourceDetails() {
   const { resourceId } = useParams()
+  const navigate = useNavigate()
   const { resource, isLoading, error } = useResource(resourceId as string)
   const buffer = useResourceEditBuffer()
   const bufferData = buffer.getBuffer(resourceId)
@@ -76,8 +84,14 @@ function ResourceDetails() {
   return (
     <PageContainer>
       <HeaderSection>
-        <h1>{resource.name} — Details</h1>
-        <BackToOverviewButton resourceId={resourceId!} />
+        <TitleRow>
+          <Button variant="secondary" size="small" onClick={() => navigate('/resources')}>
+            ← Back to Resources
+          </Button>
+          <h1>{resource.name} — Details</h1>
+          <ResourceStatusBadge status={resource.status} />
+        </TitleRow>
+        <BackToOverviewButton resourceId={resourceId!} label="Edit Resource" />
       </HeaderSection>
 
       <Card>

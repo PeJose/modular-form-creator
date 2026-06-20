@@ -3,17 +3,14 @@ import { Button } from '../design-system'
 
 interface BackToOverviewButtonProps {
   resourceId: string
+  label?: string
 }
 
-export function BackToOverviewButton({ resourceId }: BackToOverviewButtonProps) {
+export function BackToOverviewButton({ resourceId, label = 'Back to Overview' }: BackToOverviewButtonProps) {
   const navigate = useNavigate()
   return (
-    <Button
-      variant="secondary"
-      type="button"
-      onClick={() => navigate(`/resources/${resourceId}`)}
-    >
-      Back to Overview
+    <Button variant="secondary" type="button" onClick={() => navigate(`/resources/${resourceId}`)}>
+      {label}
     </Button>
   )
 }

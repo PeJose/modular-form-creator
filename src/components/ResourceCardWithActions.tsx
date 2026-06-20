@@ -61,14 +61,15 @@ export function ResourceCardWithActions({
   resource,
   onDelete,
 }: ResourceCardWithActionsProps) {
-  const navigateUrl = `/resources/${resource._id}`
+  const overviewUrl = `/resources/${resource._id}`
+  const detailsUrl = `/resources/${resource._id}/details`
   const hasDescription = Boolean(resource.basicInfo?.description || resource.projectDetails?.projectName)
   const descriptionText = resource.basicInfo?.description || resource.projectDetails?.projectName || ''
 
   return (
     <StyledCard variant="outline">
       <Header>
-        <ResourceName to={navigateUrl}>{resource.name}</ResourceName>
+        <ResourceName to={detailsUrl}>{resource.name}</ResourceName>
         <ResourceStatusBadge status={resource.status} />
       </Header>
 
@@ -77,7 +78,7 @@ export function ResourceCardWithActions({
       </Description>
 
       <Footer>
-        <DetailsLink to={navigateUrl}>View Details →</DetailsLink>
+        <DetailsLink to={overviewUrl}>Edit →</DetailsLink>
         {onDelete && (
           <Button
             onClick={() => onDelete(resource._id as string)}
