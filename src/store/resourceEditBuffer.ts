@@ -10,10 +10,11 @@ interface ResourceEditBufferState {
   buffers: Record<string, ResourceBuffer>
   setBasicInfo: (resourceId: string, data: BasicInfo) => void
   setProjectDetails: (resourceId: string, data: ProjectDetails) => void
+  getBuffer: (resourceId?: string) => ResourceBuffer | undefined
   clearBuffer: (resourceId: string) => void
 }
 
-export const useResourceEditBuffer = create<ResourceEditBufferState>((set) => ({
+export const useResourceEditBuffer = create<ResourceEditBufferState>((set, get) => ({
   buffers: {},
 
   setBasicInfo: (resourceId, data) =>
@@ -37,6 +38,8 @@ export const useResourceEditBuffer = create<ResourceEditBufferState>((set) => ({
         },
       },
     })),
+
+  getBuffer: (resourceId?: string) => (resourceId ? get().buffers[resourceId] : undefined),
 
   clearBuffer: (resourceId) =>
     set((state) => {

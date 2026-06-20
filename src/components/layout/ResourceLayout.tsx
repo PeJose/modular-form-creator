@@ -3,7 +3,6 @@ import styled from 'styled-components'
 
 const LayoutContainer = styled.div`
   padding: 20px;
-  max-width: 800px;
 `
 
 export const ResourceLayout = () => {

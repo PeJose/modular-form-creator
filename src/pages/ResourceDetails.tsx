@@ -1,8 +1,11 @@
-import { useParams, useNavigate } from 'react-router'
-import { Button, Card, Badge } from '../design-system'
+import { useParams } from 'react-router'
+import { Card, Badge } from '../design-system'
 import styled from 'styled-components'
 import { useResource } from '../hooks/useResource'
 import { useResourceEditBuffer } from '../store/resourceEditBuffer'
+import { PendingBadge } from '../components/PendingBadge'
+import { isBasicInfoComplete, isProjectDetailsComplete } from '../utils/moduleHelpers'
+import { BackToOverviewButton } from '../components/BackToOverviewButton'
 
 const PageContainer = styled.div`
   display: flex;
@@ -50,22 +53,15 @@ const SectionHeader = styled.div`
   margin-bottom: 12px;
 `
 
-const PendingBadge = styled.span`
-  background: #fff3cd;
-  color: #856404;
-  font-size: 0.75em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid #ffc107;
-  margin-left: 8px;
+const NoData = styled.p`
+  color: var(--ink-medium);
 `
 
 function ResourceDetails() {
   const { resourceId } = useParams()
-  const navigate = useNavigate()
   const { resource, isLoading, error } = useResource(resourceId as string)
   const buffer = useResourceEditBuffer()
-  const bufferData = resourceId ? buffer.buffers[resourceId] : undefined
+  const bufferData = buffer.getBuffer(resourceId)
 
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
@@ -74,28 +70,14 @@ function ResourceDetails() {
   const effectiveBasicInfo = bufferData?.basicInfo || resource.basicInfo
   const effectiveProjectDetails = bufferData?.projectDetails || resource.projectDetails
 
-  const isBasicInfoComplete = Boolean(
-    effectiveBasicInfo?.resourceName &&
-    effectiveBasicInfo?.owner &&
-    effectiveBasicInfo?.email &&
-    effectiveBasicInfo?.description &&
-    effectiveBasicInfo?.priority,
-  )
-
-  const isProjectDetailsComplete = Boolean(
-    effectiveProjectDetails?.projectName &&
-    effectiveProjectDetails?.budget &&
-    effectiveProjectDetails?.category &&
-    effectiveProjectDetails?.options?.length > 0,
-  )
+  const basicInfoComplete = isBasicInfoComplete(effectiveBasicInfo)
+  const projectDetailsComplete = isProjectDetailsComplete(effectiveProjectDetails)
 
   return (
     <PageContainer>
       <HeaderSection>
         <h1>{resource.name} — Details</h1>
-        <Button variant="secondary" onClick={() => navigate(`/resources/${resourceId}`)}>
-          Back to Overview
-        </Button>
+        <BackToOverviewButton resourceId={resourceId!} />
       </HeaderSection>
 
       <Card>
@@ -103,8 +85,8 @@ function ResourceDetails() {
           <h3>Basic Info</h3>
           <div>
             {bufferData?.basicInfo && <PendingBadge>Pending</PendingBadge>}
-            <Badge variant={isBasicInfoComplete ? 'success' : 'warning'}>
-              {isBasicInfoComplete ? 'Complete' : 'Incomplete'}
+            <Badge variant={basicInfoComplete ? 'success' : 'warning'}>
+              {basicInfoComplete ? 'Complete' : 'Incomplete'}
             </Badge>
           </div>
         </SectionHeader>
@@ -132,7 +114,7 @@ function ResourceDetails() {
             </FieldRow>
           </ModuleCard>
         ) : (
-          <p style={{ color: 'var(--ink-medium)' }}>No data yet.</p>
+          <NoData>No data yet.</NoData>
         )}
       </Card>
 
@@ -141,8 +123,8 @@ function ResourceDetails() {
           <h3>Project Details</h3>
           <div>
             {bufferData?.projectDetails && <PendingBadge>Pending</PendingBadge>}
-            <Badge variant={isProjectDetailsComplete ? 'success' : 'warning'}>
-              {isProjectDetailsComplete ? 'Complete' : 'Incomplete'}
+            <Badge variant={projectDetailsComplete ? 'success' : 'warning'}>
+              {projectDetailsComplete ? 'Complete' : 'Incomplete'}
             </Badge>
           </div>
         </SectionHeader>
@@ -166,7 +148,7 @@ function ResourceDetails() {
             </FieldRow>
           </ModuleCard>
         ) : (
-          <p style={{ color: 'var(--ink-medium)' }}>No data yet.</p>
+          <NoData>No data yet.</NoData>
         )}
       </Card>
     </PageContainer>

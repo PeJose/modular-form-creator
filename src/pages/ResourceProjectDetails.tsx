@@ -8,6 +8,9 @@ import { CategoryEnum, TeamMemberEnum, type TeamMember } from '../enums'
 import { useMutation } from '@tanstack/react-query'
 import styled from 'styled-components'
 import { useResourceEditBuffer } from '../store/resourceEditBuffer'
+import { isBasicInfoComplete } from '../utils/moduleHelpers'
+import { BackToOverviewButton } from '../components/BackToOverviewButton'
+import { FormActions } from '../components/FormActions'
 
 const WarningMessage = styled.div`
   color: orange;
@@ -15,16 +18,6 @@ const WarningMessage = styled.div`
   border: 1px solid orange;
   border-radius: 8px;
   margin-bottom: 20px;
-`
-
-const BufferNotice = styled.div`
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  color: #856404;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  font-size: 0.9em;
 `
 
 function ResourceProjectDetails() {
@@ -35,17 +28,10 @@ function ResourceProjectDetails() {
   )
   const buffer = useResourceEditBuffer()
 
-  const isBasicInfoComplete = Boolean(
-    resource?.basicInfo?.resourceName &&
-    resource?.basicInfo?.owner &&
-    resource?.basicInfo?.email &&
-    resource?.basicInfo?.description &&
-    resource?.basicInfo?.priority,
-  )
+  const basicInfoComplete = isBasicInfoComplete(resource?.basicInfo)
 
   const defaultProjectDetails =
-    (resourceId && buffer.buffers[resourceId]?.projectDetails) ||
-    resource?.projectDetails
+    buffer.getBuffer(resourceId)?.projectDetails || resource?.projectDetails
 
   const {
     register,
@@ -122,7 +108,7 @@ function ResourceProjectDetails() {
 
   const isCompleted = resource.status === 'completed'
 
-  if (resource.status === 'draft' && !isBasicInfoComplete) {
+  if (resource.status === 'draft' && !basicInfoComplete) {
     return (
       <Card>
         <h1>Project Details</h1>
@@ -135,10 +121,19 @@ function ResourceProjectDetails() {
     <Card>
       <h1>Project Details</h1>
       {isCompleted && (
-        <BufferNotice>
-          Changes are saved locally. Return to overview to submit all pending
-          changes.
-        </BufferNotice>
+        <div
+          style={{
+            background: '#fff3cd',
+            border: '1px solid #ffc107',
+            color: '#856404',
+            padding: '8px 12px',
+            borderRadius: 6,
+            marginBottom: 16,
+            fontSize: '0.9em',
+          }}
+        >
+          Changes are saved locally. Return to overview to submit all pending changes.
+        </div>
       )}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Input
@@ -196,25 +191,20 @@ function ResourceProjectDetails() {
             ))}
           </div>
         </div>
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          variant={isSubmitting ? 'secondary' : 'primary'}
-          style={{ marginTop: '20px' }}
-        >
-          {isSubmitting
-            ? 'Saving...'
-            : isCompleted
-              ? 'Save Locally'
-              : 'Save Project Details'}
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() => navigate(`/resources/${resourceId}`)}
-          style={{ marginTop: '20px', marginLeft: '10px' }}
-        >
-          Back to Overview
-        </Button>
+        <FormActions>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            variant={isSubmitting ? 'secondary' : 'primary'}
+          >
+            {isSubmitting
+              ? 'Saving...'
+              : isCompleted
+                ? 'Save Locally'
+                : 'Save Project Details'}
+</Button>
+          <BackToOverviewButton resourceId={resourceId!} />
+        </FormActions>
       </form>
     </Card>
   )

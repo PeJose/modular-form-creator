@@ -1,25 +1,15 @@
 import { useParams, useNavigate } from 'react-router'
 import { useResource } from '../hooks/useResource'
-import { Button, Select } from '../design-system'
-import { Card } from '../design-system'
-import { Input } from '../design-system'
+import { Button, Select, Card, Input } from '../design-system'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { BasicInfoSchema, type BasicInfo } from '../schemas/resource.schema'
 import { PriorityEnum } from '../enums'
 import { useMutation } from '@tanstack/react-query'
 import { useResourceEditBuffer } from '../store/resourceEditBuffer'
-import styled from 'styled-components'
-
-const BufferNotice = styled.div`
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  color: #856404;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  font-size: 0.9em;
-`
+import { PendingBadge } from '../components/PendingBadge'
+import { BackToOverviewButton } from '../components/BackToOverviewButton'
+import { FormActions } from '../components/FormActions'
 
 function ResourceBasicInfo() {
   const { resourceId } = useParams()
@@ -29,9 +19,7 @@ function ResourceBasicInfo() {
   )
   const buffer = useResourceEditBuffer()
 
-  const defaultBasicInfo =
-    (resourceId && buffer.buffers[resourceId]?.basicInfo) ||
-    resource?.basicInfo
+  const defaultBasicInfo = buffer.getBuffer(resourceId)?.basicInfo || resource?.basicInfo
 
   const {
     register,
@@ -84,10 +72,16 @@ function ResourceBasicInfo() {
     <Card>
       <h1>Basic Info</h1>
       {isCompleted && (
-        <BufferNotice>
-          Changes are saved locally. Return to overview to submit all pending
-          changes.
-        </BufferNotice>
+        <PendingBadge
+          style={{
+            display: 'inline-block',
+            marginBottom: 16,
+            padding: '8px 12px',
+            fontSize: '0.9em',
+          }}
+        >
+          Changes are saved locally. Return to overview to submit all pending changes.
+        </PendingBadge>
       )}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Input
@@ -113,29 +107,27 @@ function ResourceBasicInfo() {
           label="Priority"
           options={[
             { value: '', label: 'Select priority' },
-            ...PriorityEnum.map((p) => ({ value: p, label: p.charAt(0).toUpperCase() + p.slice(1) })),
+            ...PriorityEnum.map((p) => ({
+              value: p,
+              label: p.charAt(0).toUpperCase() + p.slice(1),
+            })),
           ]}
           error={errors.priority?.message}
         />
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          variant={isSubmitting ? 'secondary' : 'primary'}
-          style={{ marginTop: '20px' }}
-        >
-          {isSubmitting
-            ? 'Saving...'
-            : isCompleted
-              ? 'Save Locally'
-              : 'Save Basic Info'}
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() => navigate(`/resources/${resourceId}`)}
-          style={{ marginTop: '20px', marginLeft: '10px' }}
-        >
-          Back to Overview
-        </Button>
+        <FormActions>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            variant={isSubmitting ? 'secondary' : 'primary'}
+          >
+            {isSubmitting
+              ? 'Saving...'
+              : isCompleted
+                ? 'Save Locally'
+                : 'Save Basic Info'}
+</Button>
+          <BackToOverviewButton resourceId={resourceId!} />
+        </FormActions>
       </form>
     </Card>
   )

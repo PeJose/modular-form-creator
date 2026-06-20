@@ -69,11 +69,7 @@ export function ResourceCardWithActions({
     <StyledCard variant="outline">
       <Header>
         <ResourceName to={navigateUrl}>{resource.name}</ResourceName>
-        <ResourceStatusBadge
-          variant={resource.status === 'completed' ? 'success' : 'warning'}
-        >
-          {resource.status || 'draft'}
-        </ResourceStatusBadge>
+        <ResourceStatusBadge status={resource.status} />
       </Header>
 
       <Description $empty={!hasDescription}>

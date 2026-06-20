@@ -1,10 +1,14 @@
+import type { ResourceStatus } from '../types/resource'
 import { Badge } from '../design-system'
 
 interface ResourceStatusBadgeProps {
-  variant: 'success' | 'warning'
-  children: React.ReactNode
+  status: ResourceStatus
 }
 
-export function ResourceStatusBadge({ variant, children }: ResourceStatusBadgeProps) {
-  return <Badge variant={variant}>{children}</Badge>
+export function ResourceStatusBadge({ status }: ResourceStatusBadgeProps) {
+  return (
+    <Badge variant={status === 'completed' ? 'success' : 'warning'}>
+      {status.toUpperCase()}
+    </Badge>
+  )
 }

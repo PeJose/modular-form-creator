@@ -1,12 +1,14 @@
 import { Link, useParams, useNavigate } from 'react-router'
 import { useResource } from '../hooks/useResource'
 import { ResourceStatusBadge } from '../components/ResourceStatusBadge'
+import { PendingBadge } from '../components/PendingBadge'
 import { Card } from '../design-system'
 import { Button } from '../design-system'
 import styled from 'styled-components'
 import { useResourceEditBuffer } from '../store/resourceEditBuffer'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { resourceService } from '../services/resourceService'
+import { isBasicInfoComplete, isProjectDetailsComplete } from '../utils/moduleHelpers'
 
 const InfoSection = styled.div`
   display: flex;
@@ -47,15 +49,6 @@ const ModuleProgressActions = styled.div`
   gap: 8px;
 `
 
-const PendingBadge = styled.span`
-  background: #fff3cd;
-  color: #856404;
-  font-size: 0.75em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid #ffc107;
-`
-
 function ResourceOverview() {
   const { resourceId } = useParams()
   const navigate = useNavigate()
@@ -64,30 +57,18 @@ function ResourceOverview() {
     resourceId as string,
   )
   const buffer = useResourceEditBuffer()
-  const bufferData = resourceId ? buffer.buffers[resourceId] : undefined
+  const bufferData = buffer.getBuffer(resourceId)
 
   const hasPendingChanges = Boolean(bufferData?.basicInfo || bufferData?.projectDetails)
 
   const effectiveBasicInfo = bufferData?.basicInfo || resource?.basicInfo
   const effectiveProjectDetails = bufferData?.projectDetails || resource?.projectDetails
 
-  const isBasicInfoComplete = Boolean(
-    effectiveBasicInfo?.resourceName &&
-    effectiveBasicInfo?.owner &&
-    effectiveBasicInfo?.email &&
-    effectiveBasicInfo?.description &&
-    effectiveBasicInfo?.priority,
-  )
-
-  const isProjectDetailsComplete = Boolean(
-    effectiveProjectDetails?.projectName &&
-    effectiveProjectDetails?.budget &&
-    effectiveProjectDetails?.category &&
-    effectiveProjectDetails?.options?.length > 0,
-  )
+  const basicInfoComplete = isBasicInfoComplete(effectiveBasicInfo)
+  const projectDetailsComplete = isProjectDetailsComplete(effectiveProjectDetails)
 
   const canProvision =
-    resource?.status === 'draft' && isBasicInfoComplete && isProjectDetailsComplete
+    resource?.status === 'draft' && basicInfoComplete && projectDetailsComplete
 
   const handleProvision = async () => {
     await provisionResource()
@@ -95,12 +76,10 @@ function ResourceOverview() {
 
   const submitMutation = useMutation({
     mutationFn: () => {
-      const serverBasicInfo = resource!.basicInfo!
-      const serverProjectDetails = resource!.projectDetails!
       const payload = {
         name: resource!.name,
-        basicInfo: bufferData?.basicInfo || serverBasicInfo,
-        projectDetails: bufferData?.projectDetails || serverProjectDetails,
+        basicInfo: bufferData?.basicInfo || resource!.basicInfo!,
+        projectDetails: bufferData?.projectDetails || resource!.projectDetails!,
       }
       return resourceService.fullUpdateResource(resourceId!, payload)
     },
@@ -139,11 +118,7 @@ function ResourceOverview() {
           }}
         >
           <h1>{resource.name}</h1>
-          <ResourceStatusBadge
-            variant={resource.status === 'completed' ? 'success' : 'warning'}
-          >
-            {resource.status.toUpperCase()}
-          </ResourceStatusBadge>
+          <ResourceStatusBadge status={resource.status} />
         </div>
       </InfoSection>
 
@@ -155,7 +130,7 @@ function ResourceOverview() {
             <span className="module-name">Basic Info</span>
             <ModuleProgressActions>
               <span className="module-status">
-                {isBasicInfoComplete ? 'Complete' : 'Incomplete'}
+                {basicInfoComplete ? 'Complete' : 'Incomplete'}
               </span>
               {hasBufferedBasicInfo && <PendingBadge>Pending</PendingBadge>}
               <Link to={`/resources/${resource._id}/basic-info`}>
@@ -170,7 +145,7 @@ function ResourceOverview() {
             <span className="module-name">Project Details</span>
             <ModuleProgressActions>
               <span className="module-status">
-                {isProjectDetailsComplete ? 'Complete' : 'Incomplete'}
+                {projectDetailsComplete ? 'Complete' : 'Incomplete'}
               </span>
               {hasBufferedProjectDetails && <PendingBadge>Pending</PendingBadge>}
               <Link to={`/resources/${resource._id}/project-details`}>
