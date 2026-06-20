@@ -1,19 +1,13 @@
-import { useParams } from 'react-router'
+import { Link, useParams, useNavigate } from 'react-router'
 import { useResource } from '../hooks/useResource'
 import { ResourceStatusBadge } from '../components/ResourceStatusBadge'
 import { Card } from '../design-system'
 import { Button } from '../design-system'
 import styled from 'styled-components'
 
-const OverviewContainer = styled.div`
-  padding: 20px;
-  max-width: 800px;
-`
-
 const InfoSection = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 16px;
   margin-bottom: 20px;
 `
@@ -44,8 +38,15 @@ const ModuleProgress = styled.div`
   }
 `
 
+const ModuleProgressActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`
+
 function ResourceOverview() {
   const { resourceId } = useParams()
+  const navigate = useNavigate()
   const { resource, isLoading, error, provisionResource } = useResource(
     resourceId as string,
   )
@@ -77,44 +78,71 @@ function ResourceOverview() {
   }
 
   return (
-    <OverviewContainer>
-      <Card>
-        <InfoSection>
+    <Card>
+      <InfoSection>
+        <Button variant="secondary" size="small" onClick={() => navigate('/resources')}>
+          ← Back to Resources
+        </Button>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <h1>{resource.name}</h1>
           <ResourceStatusBadge
             variant={resource.status === 'completed' ? 'success' : 'warning'}
           >
             {resource.status.toUpperCase()}
           </ResourceStatusBadge>
-        </InfoSection>
+        </div>
+      </InfoSection>
 
-        <ProgressSection>
-          <ModuleProgressTitle>Module Progress</ModuleProgressTitle>
+      <ProgressSection>
+        <ModuleProgressTitle>Module Progress</ModuleProgressTitle>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <ModuleProgress>
             <span className="module-name">Basic Info</span>
-            <span className="module-status">
-              {isBasicInfoComplete ? 'Complete' : 'Incomplete'}
-            </span>
+            <ModuleProgressActions>
+              <span className="module-status">
+                {isBasicInfoComplete ? 'Complete' : 'Incomplete'}
+              </span>
+              <Link to={`/resources/${resource._id}/basic-info`}>
+                <Button variant="secondary" size="small">
+                  Edit
+                </Button>
+              </Link>
+            </ModuleProgressActions>
           </ModuleProgress>
+
           <ModuleProgress>
             <span className="module-name">Project Details</span>
-            <span className="module-status">
-              {isProjectDetailsComplete ? 'Complete' : 'Incomplete'}
-            </span>
+            <ModuleProgressActions>
+              <span className="module-status">
+                {isProjectDetailsComplete ? 'Complete' : 'Incomplete'}
+              </span>
+              <Link to={`/resources/${resource._id}/project-details`}>
+                <Button variant="secondary" size="small">
+                  Edit
+                </Button>
+              </Link>
+            </ModuleProgressActions>
           </ModuleProgress>
-        </ProgressSection>
+        </div>
+      </ProgressSection>
 
-        {resource.status === 'draft' && (
-          <Button
-            onClick={handleProvision}
-            disabled={!canProvision}
-            variant={canProvision ? 'primary' : 'secondary'}
-          >
-            Provision
-          </Button>
-        )}
-      </Card>
-    </OverviewContainer>
+      {resource.status === 'draft' && (
+        <Button
+          onClick={handleProvision}
+          disabled={!canProvision}
+          variant={canProvision ? 'primary' : 'secondary'}
+        >
+          Provision
+        </Button>
+      )}
+    </Card>
   )
 }
 
