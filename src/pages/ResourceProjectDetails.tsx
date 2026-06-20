@@ -8,6 +8,7 @@ import { CategoryEnum, TeamMemberEnum, type TeamMember } from '../enums'
 import { useMutation } from '@tanstack/react-query'
 import styled from 'styled-components'
 import { useMemo } from 'react'
+import { useResourceEditBuffer } from '../store/resourceEditBuffer'
 
 const WarningMessage = styled.div`
   color: orange;
@@ -17,12 +18,23 @@ const WarningMessage = styled.div`
   margin-bottom: 20px;
 `
 
+const BufferNotice = styled.div`
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9em;
+`
+
 function ResourceProjectDetails() {
   const { resourceId } = useParams()
   const navigate = useNavigate()
   const { resource, isLoading, error, updateProjectDetails } = useResource(
     resourceId as string,
   )
+  const buffer = useResourceEditBuffer()
 
   const isBasicInfoComplete = Boolean(
     resource?.basicInfo?.resourceName &&
@@ -31,6 +43,10 @@ function ResourceProjectDetails() {
     resource?.basicInfo?.description &&
     resource?.basicInfo?.priority,
   )
+
+  const defaultProjectDetails =
+    (resourceId && buffer.buffers[resourceId]?.projectDetails) ||
+    resource?.projectDetails
 
   const {
     register,
@@ -41,10 +57,16 @@ function ResourceProjectDetails() {
   } = useForm<ProjectDetails>({
     resolver: zodResolver(ProjectDetailsSchema),
     defaultValues: {
-      projectName: resource?.projectDetails?.projectName || '',
-      budget: resource?.projectDetails?.budget || '',
-      category: resource?.projectDetails?.category || 'internal',
-      options: resource?.projectDetails?.options || [],
+      projectName: defaultProjectDetails?.projectName || '',
+      budget: defaultProjectDetails?.budget || '',
+      category: defaultProjectDetails?.category || 'internal',
+      options: defaultProjectDetails?.options || [],
+    },
+    values: {
+      projectName: defaultProjectDetails?.projectName || '',
+      budget: defaultProjectDetails?.budget || '',
+      category: defaultProjectDetails?.category || 'internal',
+      options: defaultProjectDetails?.options || [],
     },
   })
 
@@ -64,10 +86,6 @@ function ResourceProjectDetails() {
     )
   }
 
-  const onSubmit = (data: ProjectDetails) => {
-    mutation.mutate(data)
-  }
-
   const availableTeamMemberOptions = useMemo(
     () => TeamMemberEnum.filter((m) => !selectedOptions.includes(m)),
     [selectedOptions],
@@ -80,11 +98,33 @@ function ResourceProjectDetails() {
     },
   })
 
+  const onSubmit = (data: ProjectDetails) => {
+    if (resource?.status === 'completed') {
+      const server = resource.projectDetails
+      if (
+        server &&
+        server.projectName === data.projectName &&
+        server.budget === data.budget &&
+        server.category === data.category &&
+        JSON.stringify(server.options) === JSON.stringify(data.options)
+      ) {
+        navigate(`/resources/${resourceId}`)
+        return
+      }
+      buffer.setProjectDetails(resourceId!, data)
+      navigate(`/resources/${resourceId}`)
+    } else {
+      mutation.mutate(data)
+    }
+  }
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
   if (!resource) return <div>Resource not found</div>
 
-if (resource.status === 'draft' && !isBasicInfoComplete) {
+  const isCompleted = resource.status === 'completed'
+
+  if (resource.status === 'draft' && !isBasicInfoComplete) {
     return (
       <Card>
         <h1>Project Details</h1>
@@ -96,6 +136,12 @@ if (resource.status === 'draft' && !isBasicInfoComplete) {
   return (
     <Card>
       <h1>Project Details</h1>
+      {isCompleted && (
+        <BufferNotice>
+          Changes are saved locally. Return to overview to submit all pending
+          changes.
+        </BufferNotice>
+      )}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Input
           {...register('projectName')}
@@ -158,7 +204,11 @@ if (resource.status === 'draft' && !isBasicInfoComplete) {
           variant={isSubmitting ? 'secondary' : 'primary'}
           style={{ marginTop: '20px' }}
         >
-          {isSubmitting ? 'Saving...' : 'Save Project Details'}
+          {isSubmitting
+            ? 'Saving...'
+            : isCompleted
+              ? 'Save Locally'
+              : 'Save Project Details'}
         </Button>
         <Button
           variant="secondary"

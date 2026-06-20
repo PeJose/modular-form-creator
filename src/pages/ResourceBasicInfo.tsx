@@ -8,6 +8,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { BasicInfoSchema, type BasicInfo } from '../schemas/resource.schema'
 import { PriorityEnum } from '../enums'
 import { useMutation } from '@tanstack/react-query'
+import { useResourceEditBuffer } from '../store/resourceEditBuffer'
+import styled from 'styled-components'
+
+const BufferNotice = styled.div`
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9em;
+`
 
 function ResourceBasicInfo() {
   const { resourceId } = useParams()
@@ -15,6 +27,11 @@ function ResourceBasicInfo() {
   const { resource, isLoading, error, updateBasicInfo } = useResource(
     resourceId as string,
   )
+  const buffer = useResourceEditBuffer()
+
+  const defaultBasicInfo =
+    (resourceId && buffer.buffers[resourceId]?.basicInfo) ||
+    resource?.basicInfo
 
   const {
     register,
@@ -22,7 +39,8 @@ function ResourceBasicInfo() {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(BasicInfoSchema),
-    defaultValues: resource?.basicInfo || {},
+    defaultValues: defaultBasicInfo || {},
+    values: defaultBasicInfo,
   })
 
   const mutation = useMutation({
@@ -36,16 +54,41 @@ function ResourceBasicInfo() {
   if (error) return <div>Error: {error.message}</div>
   if (!resource) return <div>Resource not found</div>
 
+  const isCompleted = resource.status === 'completed'
+
   const onSubmit = (data: BasicInfo) => {
-    mutation.mutate({
+    const payload = {
       ...data,
       resourceName: resource.basicInfo?.resourceName || resource.name,
-    })
+    }
+    if (isCompleted) {
+      const server = resource.basicInfo
+      if (
+        server &&
+        server.owner === payload.owner &&
+        server.email === payload.email &&
+        server.description === payload.description &&
+        server.priority === payload.priority
+      ) {
+        navigate(`/resources/${resourceId}`)
+        return
+      }
+      buffer.setBasicInfo(resourceId!, payload)
+      navigate(`/resources/${resourceId}`)
+    } else {
+      mutation.mutate(payload)
+    }
   }
 
   return (
     <Card>
       <h1>Basic Info</h1>
+      {isCompleted && (
+        <BufferNotice>
+          Changes are saved locally. Return to overview to submit all pending
+          changes.
+        </BufferNotice>
+      )}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Input
           {...register('resourceName', { disabled: true })}
@@ -80,7 +123,11 @@ function ResourceBasicInfo() {
           variant={isSubmitting ? 'secondary' : 'primary'}
           style={{ marginTop: '20px' }}
         >
-          {isSubmitting ? 'Saving...' : 'Save Basic Info'}
+          {isSubmitting
+            ? 'Saving...'
+            : isCompleted
+              ? 'Save Locally'
+              : 'Save Basic Info'}
         </Button>
         <Button
           variant="secondary"
