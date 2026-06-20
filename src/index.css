@@ -1,4 +1,16 @@
 :root {
+  --ink-medium: #5e6c76;
+  --ink-strong: #12212b;
+  --primary: #1f7a8c;
+  --surface-border: #d6dde1;
+  --surface-background: #ffffff;
+  --red-50: #fef2f2;
+  --red-200: #fecaca;
+  --red-600: #dc2626;
+  --red-800: #991b1b;
+}
+
+:root {
   font: 18px/145% system-ui, 'Segoe UI', Roboto, sans-serif;
   color-scheme: light dark;
   font-synthesis: none;

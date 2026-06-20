@@ -99,7 +99,6 @@ function ResourcesList() {
         </>
       ) : resources && resources.length === 0 ? (
         <EmptyContainer>
-          <div className="text-3xl mb-4">📦</div>
           <h2 className="text-xl font-semibold mb-2">No resources yet</h2>
           <p className="max-w-md text-center max-w-lg">
             Create your first resource to get started. Click the button above or use this

@@ -1,13 +1,12 @@
 import { useParams, useNavigate } from 'react-router'
 import { useResource } from '../hooks/useResource'
 import { Button, Card, Input, Select } from '../design-system'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ProjectDetailsSchema, type ProjectDetails } from '../schemas/resource.schema'
 import { CategoryEnum, TeamMemberEnum, type TeamMember } from '../enums'
 import { useMutation } from '@tanstack/react-query'
 import styled from 'styled-components'
-import { useMemo } from 'react'
 import { useResourceEditBuffer } from '../store/resourceEditBuffer'
 
 const WarningMessage = styled.div`
@@ -51,8 +50,8 @@ function ResourceProjectDetails() {
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ProjectDetails>({
     resolver: zodResolver(ProjectDetailsSchema),
@@ -70,7 +69,7 @@ function ResourceProjectDetails() {
     },
   })
 
-  const selectedOptions = watch('options') || []
+  const selectedOptions = (useWatch({ control, name: 'options' }) || []) as TeamMember[]
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value as TeamMember
@@ -86,9 +85,8 @@ function ResourceProjectDetails() {
     )
   }
 
-  const availableTeamMemberOptions = useMemo(
-    () => TeamMemberEnum.filter((m) => !selectedOptions.includes(m)),
-    [selectedOptions],
+  const availableTeamMemberOptions = TeamMemberEnum.filter(
+    (m) => !selectedOptions.includes(m),
   )
 
   const mutation = useMutation({
