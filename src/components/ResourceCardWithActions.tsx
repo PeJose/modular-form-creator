@@ -9,6 +9,12 @@ interface ResourceCardWithActionsProps {
   onDelete?: (id: string) => Promise<void>
 }
 
+const StyledCard = styled(Card)`
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+`
+
 const Header = styled.div`
   display: flex;
   align-items: flex-start;
@@ -26,10 +32,11 @@ const ResourceName = styled(Link)`
   }
 `
 
-const Description = styled.p`
+const Description = styled.p<{ $empty?: boolean }>`
   font-size: 0.875rem;
   color: var(--ink-medium);
   margin-top: 0.5rem;
+  visibility: ${({ $empty }) => ($empty ? 'hidden' : 'visible')};
 `
 
 const Footer = styled.div`
@@ -38,6 +45,7 @@ const Footer = styled.div`
   justify-content: space-between;
   padding-top: 0.75rem;
   border-top: 1px solid var(--surface-border);
+  margin-top: auto;
 `
 
 const DetailsLink = styled(Link)`
@@ -54,9 +62,11 @@ export function ResourceCardWithActions({
   onDelete,
 }: ResourceCardWithActionsProps) {
   const navigateUrl = `/resources/${resource._id}`
+  const hasDescription = Boolean(resource.basicInfo?.description || resource.projectDetails?.projectName)
+  const descriptionText = resource.basicInfo?.description || resource.projectDetails?.projectName || ''
 
   return (
-    <Card variant="outline">
+    <StyledCard variant="outline">
       <Header>
         <ResourceName to={navigateUrl}>{resource.name}</ResourceName>
         <ResourceStatusBadge
@@ -66,11 +76,9 @@ export function ResourceCardWithActions({
         </ResourceStatusBadge>
       </Header>
 
-      {(resource.basicInfo?.description || resource.projectDetails?.projectName) && (
-        <Description>
-          {resource.basicInfo?.description || resource.projectDetails?.projectName}
-        </Description>
-      )}
+      <Description $empty={!hasDescription}>
+        {descriptionText || '\u00A0'}
+      </Description>
 
       <Footer>
         <DetailsLink to={navigateUrl}>View Details →</DetailsLink>
@@ -84,6 +92,6 @@ export function ResourceCardWithActions({
           </Button>
         )}
       </Footer>
-    </Card>
+    </StyledCard>
   )
 }

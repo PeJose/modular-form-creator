@@ -7,8 +7,9 @@ import { Button } from '../design-system'
 import axios from 'axios'
 
 function ResourcesList() {
-  const { resources, isLoading, error, createResource, deleteResource } = useResources()
-  
+  const [page, setPage] = useState(1)
+  const { resources, pagination, isLoading, error, createResource, deleteResource } = useResources(page)
+
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
 
@@ -16,6 +17,7 @@ function ResourcesList() {
     setCreateError(null)
     try {
       await createResource(name.trim())
+      setPage(1)
       setIsCreateOpen(false)
     } catch (err: unknown) {
       let errorMessage = 'Failed to create resource'
@@ -60,17 +62,42 @@ function ResourcesList() {
         </Button>
       </HeaderContainer>
 
-      {resources && resources.items && resources.items.length > 0 ? (
-        <GridContainer>
-          {resources.items.map((resource) => (
-            <ResourceCardWithActions
-              key={resource._id}
-              resource={resource}
-              onDelete={handleDelete}
-            />
-          ))}
-        </GridContainer>
-      ) : resources && resources.items && resources.items.length === 0 ? (
+      {resources && resources.length > 0 ? (
+        <>
+          <GridContainer>
+            {resources.map((resource) => (
+              <ResourceCardWithActions
+                key={resource._id}
+                resource={resource}
+                onDelete={handleDelete}
+              />
+            ))}
+          </GridContainer>
+          {pagination && (
+            <PaginationContainer>
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                ← Previous
+              </Button>
+              <PageInfo>
+                Page {pagination.page} of {pagination.totalPages}
+              </PageInfo>
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={page >= pagination.totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next →
+              </Button>
+            </PaginationContainer>
+          )}
+        </>
+      ) : resources && resources.length === 0 ? (
         <EmptyContainer>
           <div className="text-3xl mb-4">📦</div>
           <h2 className="text-xl font-semibold mb-2">No resources yet</h2>
@@ -96,6 +123,19 @@ function ResourcesList() {
     </MainContainer>
   )
 }
+
+const PaginationContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 0;
+`
+
+const PageInfo = styled.span`
+  font-size: 0.875rem;
+  color: var(--ink-medium);
+`
 
 const LoadingContainer = styled.div`
   display: flex;

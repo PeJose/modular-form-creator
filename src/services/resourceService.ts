@@ -3,8 +3,8 @@ import type { BasicInfo, ProjectDetails } from '../schemas/resource.schema'
 import type { Resource, ListResourcesResult } from '../types/resource'
 
 export const resourceService = {
-  getResources: async (): Promise<ListResourcesResult> => {
-    const { data } = await api.get('/resources')
+  getResources: async (page = 1, pageSize = 9): Promise<ListResourcesResult> => {
+    const { data } = await api.get('/resources', { params: { page, pageSize } })
     return data
   },
 

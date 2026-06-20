@@ -121,9 +121,16 @@ function ResourceOverview() {
   return (
     <Card>
       <InfoSection>
-        <Button variant="secondary" size="small" onClick={() => navigate('/resources')}>
-          ← Back to Resources
-        </Button>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Button variant="secondary" size="small" onClick={() => navigate('/resources')}>
+            ← Back to Resources
+          </Button>
+          <Link to={`/resources/${resource._id}/details`}>
+            <Button variant="secondary" size="small">
+              View Details →
+            </Button>
+          </Link>
+        </div>
         <div
           style={{
             display: 'flex',
